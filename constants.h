@@ -1,0 +1,2 @@
+#define SQUARE_SIZE 128
+#define GAME_SIZE (8 *SQUARE_SIZE)

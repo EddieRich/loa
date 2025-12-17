@@ -1,3 +1,8 @@
+#ifndef __CONSTANTS_DEFINED__
+#define __CONSTANTS_DEFINED__
+
 #define SQUARE_SIZE 128
 #define GAME_SIZE (8 *SQUARE_SIZE)
 #define CHIP_RADIUS 50
+
+#endif // __CONSTANTS_DEFINED__

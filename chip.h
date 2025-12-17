@@ -9,6 +9,8 @@ public:
 	int fy, ty;		// lerp to
 	float t;			// lerp t
 
+	bool selected;
+
 	Color color;
 
 	Chip();
@@ -17,6 +19,7 @@ public:
 	bool Update(float elapsed);
 	void Render(void) const;
 
+	bool Contains(Vector2 pt);
 	void MoveTo(int nx, int ny);
 };
 

@@ -2,6 +2,8 @@
 #include <raymath.h>
 #include "constants.h"
 #include "chip.h"
+#include "player.h"
+#include "humanPlayer.h"
 #include "loa.h"
 
 bool showTitleScreen = false;
@@ -63,7 +65,7 @@ void events(LinesOfAction* ploa)
 	}
 
 	screen_mouse = GetMousePosition();
-	Vector2 game_mouse = Vector2Scale(Vector2Subtract(screen_mouse, camera.offset), 1.0 / camera.zoom);
+	game_mouse = Vector2Scale(Vector2Subtract(screen_mouse, camera.offset), 1.0 / camera.zoom);
 }
 
 int main(void)

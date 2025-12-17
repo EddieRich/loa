@@ -6,6 +6,7 @@
 Chip::Chip()
 {
 	SetRandomOffScreen();
+	selected = false;
 }
 
 void Chip::SetRandomOffScreen()
@@ -62,8 +63,14 @@ bool Chip::Update(float elapsed)
 
 void Chip::Render() const
 {
-	DrawCircleGradient(px, py, CHIP_RADIUS, color, Fade(color, 0.75));
-	DrawCircleLines(px, py, CHIP_RADIUS, color);
+	DrawCircle(px, py, CHIP_RADIUS, color);
+	if (selected)
+		DrawCircle(px, py, CHIP_RADIUS / 2, RED);
+}
+
+bool Chip::Contains(Vector2 pt)
+{
+	return Vector2Distance((Vector2) { (float)px, (float)py }, pt) < CHIP_RADIUS;
 }
 
 void Chip::MoveTo(int nx, int ny)

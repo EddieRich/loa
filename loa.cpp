@@ -1,6 +1,8 @@
 #include <raylib.h>
 #include "constants.h"
 #include "chip.h"
+#include "player.h"
+#include "humanPlayer.h"
 #include "loa.h"
 
 extern Vector2 game_mouse;
@@ -12,9 +14,30 @@ const Color lightColor = (Color){ 144, 144, 144, 255 };
 LinesOfAction::LinesOfAction()
 {
 	state = &LinesOfAction::NewGame;
+	player[0] = 0;
+	player[1] = 0;
+	pi = 0;
 }
 
-LinesOfAction::~LinesOfAction() {}
+LinesOfAction::~LinesOfAction()
+{
+	ClearPlayers();
+}
+
+void LinesOfAction::ClearPlayers()
+{
+	if (player[0])
+	{
+		delete player[0];
+		player[0] = 0;
+	}
+
+	if (player[1])
+	{
+		delete player[1];
+		player[1] = 0;
+	}
+}
 
 bool LinesOfAction::Update(float elapsed)
 {
@@ -48,6 +71,11 @@ void LinesOfAction::Render()
 
 bool LinesOfAction::NewGame()
 {
+	ClearPlayers();
+	player[0] = new HumanPlayer(true);
+	player[1] = new HumanPlayer(false);
+	pi = 0;
+
 	for (Chip& c : chip)
 		c.SetRandomOffScreen();
 
@@ -69,10 +97,10 @@ bool LinesOfAction::NewGame()
 
 bool LinesOfAction::PlayerChooseChip()
 {
-	return false;
+	return player[pi]->ChooseChip(this);
 }
 
 bool LinesOfAction::PlayerChooseTarget()
 {
-	return false;
+	return player[pi]->ChooseTarget();
 }

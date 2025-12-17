@@ -25,7 +25,7 @@ void set_scale()
 	camera.target.y = 0;
 }
 
-void events()
+void events(LinesOfAction* ploa)
 {
 	if (IsKeyPressed(KEY_F11))	// pressed and released
 	{
@@ -57,7 +57,10 @@ void events()
 	}
 
 	if (IsWindowResized())
+	{
 		set_scale();
+		ploa->requires_render = true;
+	}
 
 	screen_mouse = GetMousePosition();
 	Vector2 game_mouse = Vector2Scale(Vector2Subtract(screen_mouse, camera.offset), 1.0 / camera.zoom);
@@ -73,10 +76,11 @@ int main(void)
 	SetTargetFPS(60);
 
 	LinesOfAction loa;
+	loa.requires_render = true;
 
 	while (!WindowShouldClose() && !quit_requested)
 	{
-		events();
+		events(&loa);
 
 		BeginDrawing();
 		//if (showTitleScreen)

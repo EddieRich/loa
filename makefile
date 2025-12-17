@@ -1,5 +1,5 @@
 # CFLAGS is not defined by default
-CXXFLAGS = -MMD -Wall -Wextra -Werror -std=c++23 -march=x86-64
+CXXFLAGS = -MMD -Wall -Wextra -Werror -std=c++23
 
 SRC=$(wildcard *.cpp)
 OBJ=$(SRC:%.cpp=%.o)

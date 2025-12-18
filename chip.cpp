@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "chip.h"
 
+extern Camera2D camera;
 Texture2D Chip::texChip;
 
 Chip::Chip()
@@ -11,33 +12,50 @@ Chip::Chip()
 	selected = false;
 }
 
-void Chip::SetRandomOffScreen()
+void Chip::SetRandomOffScreen(bool move_to)
 {
-	int sw = GetScreenWidth();
-	int sh = GetScreenHeight();
+	int nx, ny;
+
+	int m = GetCurrentMonitor();
+	int w = GetMonitorWidth(m);
+	int h = GetMonitorHeight(m);
+	int chip_dia = CHIP_RADIUS * 2;
+
+	Vector2 min = GetScreenToWorld2D((Vector2) { (float)-chip_dia, (float)-chip_dia }, camera);
+	Vector2 max = GetScreenToWorld2D((Vector2) { (float)(w + chip_dia), (float)(h + chip_dia) }, camera);
+
+	bx = by = -1;
+
 	int r = GetRandomValue(0, 1000000);
 	if (r < 250000)
 	{
-		py = fy = ty = -CHIP_RADIUS;
-		px = fx = tx = GetRandomValue(-CHIP_RADIUS, sw + CHIP_RADIUS);
+		ny = min.y;
+		nx = GetRandomValue(min.x, max.x);
 	}
 	else if (r < 500000)
 	{
-		px = fx = tx = sw + CHIP_RADIUS;
-		py = fy = ty = GetRandomValue(-CHIP_RADIUS, sh + CHIP_RADIUS);
+		nx = max.x;
+		ny = GetRandomValue(min.y, max.y);
 	}
 	else if (r < 750000)
 	{
-		py = fy = ty = sh + CHIP_RADIUS;
-		px = fx = tx = GetRandomValue(-CHIP_RADIUS, sw + CHIP_RADIUS);
+		ny = max.y;
+		nx = GetRandomValue(min.x, min.y);
 	}
 	else
 	{
-		px = fx = tx = -CHIP_RADIUS;
-		py = fy = ty = GetRandomValue(-CHIP_RADIUS, sh + CHIP_RADIUS);
+		nx = min.x;
+		ny = GetRandomValue(min.y, max.y);
 	}
 
-	t = 1.0;
+	if (move_to)
+		MoveTo(nx, ny);
+	else
+	{
+		px = fx = tx = nx;
+		py = fy = ty = ny;
+		t = 1.0;
+	}
 }
 
 bool Chip::Update(float elapsed)

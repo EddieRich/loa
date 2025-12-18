@@ -6,14 +6,7 @@ class LinesOfAction
 private:
 	bool (LinesOfAction::* state)();
 
-
-	void SetTargetFlag(int bx, int by);
-	bool IsTarget(int bx, int by);
 	void ClearPlayers();
-	bool ChipAt(int bx, int by);
-	int ChipIndexAt(int bx, int by);
-	bool LegalMove(int ci, int dx, int dy, int count);
-	int GetLineCount(int x, int y, int dx, int dy);
 
 public:
 	bool requires_render;
@@ -31,10 +24,18 @@ public:
 	void Shutdown();
 
 	void SetTargetsFor(int chip_index);
+	void SetTargetFlag(int bx, int by);
+	bool IsTarget(int bx, int by);
+	bool ChipAt(int bx, int by);
+	int ChipIndexAt(int bx, int by);
+	int SelectedChipIndex();
+	bool LegalMove(int ci, int dx, int dy, int count);
+	int GetLineCount(int x, int y, int dx, int dy);
 
 	bool NewGame();
 	bool PlayerChooseChip();
 	bool PlayerChooseTarget();
+	bool CheckPlayerWins();
 
 	bool Update(float elapsed);
 	void Render();

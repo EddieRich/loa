@@ -29,7 +29,7 @@ bool HumanPlayer::ChooseChip(LinesOfAction* ploa)
 			ci = i;
 	}
 
-	if (ci >= 0 && isWhite ? (ci < 12) : (ci >= 12))
+	if (ci >= 0 && isWhite ? (ci >= 12) : (ci < 12))
 	{
 		ploa->SetTargetsFor(ci);
 		if (ploa->target != 0ULL)
@@ -43,7 +43,41 @@ bool HumanPlayer::ChooseChip(LinesOfAction* ploa)
 	return false;
 }
 
-bool HumanPlayer::ChooseTarget(LinesOfAction* ploa)
+int HumanPlayer::ChooseTarget(LinesOfAction* ploa)
 {
-	return false;
+	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+	{
+		int bx = (int)(game_mouse.x / SQUARE_SIZE);
+		int by = (int)(game_mouse.y / SQUARE_SIZE);
+
+		// is the player clicking on a chip
+		int ci = ploa->ChipIndexAt(bx, by);
+		if (ci >= 0)
+		{
+			if (ploa->chip[ci].selected)
+			{
+				ploa->chip[ci].selected = false;
+				ploa->target = 0ULL;
+				return -1;
+			}
+			else if (ploa->IsTarget(bx, by))
+			{
+				ploa->chip[ci].SetRandomOffScreen(true);
+			}
+		}
+
+		// click on target?
+		if (ploa->IsTarget(bx, by))
+		{
+			int si = ploa->SelectedChipIndex();
+			ploa->chip[si].selected = false;
+			ploa->target = 0ULL;
+			ploa->chip[si].bx = bx;
+			ploa->chip[si].by = by;
+			ploa->chip[si].MoveTo((bx + 0.5) * SQUARE_SIZE, (by + 0.5) * SQUARE_SIZE);
+			return 1;
+		}
+	}
+
+	return 0;
 }

@@ -56,6 +56,17 @@ int LinesOfAction::ChipIndexAt(int bx, int by)
 	return -1;
 }
 
+int LinesOfAction::SelectedChipIndex()
+{
+	for (int i = 0; i < 24; i++)
+	{
+		if (chip[i].selected)
+			return i;
+	}
+
+	return -1;
+}
+
 bool LinesOfAction::LegalMove(int ci, int dx, int dy, int count)
 {
 	if (count == 0)
@@ -227,28 +238,29 @@ void LinesOfAction::Render()
 bool LinesOfAction::NewGame()
 {
 	ClearPlayers();
-	player[0] = new HumanPlayer(true);
-	player[1] = new HumanPlayer(false);
+	player[0] = new HumanPlayer(false);
+	player[1] = new HumanPlayer(true);
 	pi = 0;
+	target = 0ULL;
 
 	for (Chip& c : chip)
 		c.SetRandomOffScreen();
 
 	for (int i = 0; i < 6; i++)
 	{
-		chip[i].color = lightChip;
+		chip[i].color = darkChip;
 		chip[i].bx = i + 1;
 		chip[i].by = 0;
 		chip[i].MoveTo(((i + 1.5) * SQUARE_SIZE), (0.5 * SQUARE_SIZE));
-		chip[i + 6].color = lightChip;
+		chip[i + 6].color = darkChip;
 		chip[i + 6].bx = i + 1;
 		chip[i + 6].by = 7;
 		chip[i + 6].MoveTo(((i + 1.5) * SQUARE_SIZE), (7.5 * SQUARE_SIZE));
-		chip[i + 12].color = darkChip;
+		chip[i + 12].color = lightChip;
 		chip[i + 12].bx = 0;
 		chip[i + 12].by = i + 1;
 		chip[i + 12].MoveTo((0.5 * SQUARE_SIZE), ((i + 1.5) * SQUARE_SIZE));
-		chip[i + 18].color = darkChip;
+		chip[i + 18].color = lightChip;
 		chip[i + 18].bx = 7;
 		chip[i + 18].by = i + 1;
 		chip[i + 18].MoveTo((7.5 * SQUARE_SIZE), ((i + 1.5) * SQUARE_SIZE));
@@ -263,10 +275,24 @@ bool LinesOfAction::PlayerChooseChip()
 	if (player[pi]->ChooseChip(this))
 		state = &LinesOfAction::PlayerChooseTarget;
 
-	return requires_render;
+	return true;
 }
 
 bool LinesOfAction::PlayerChooseTarget()
 {
-	return player[pi]->ChooseTarget(this);
+	int result = player[pi]->ChooseTarget(this);
+	if (result == -1)
+		state = &LinesOfAction::PlayerChooseChip;
+	else if (result == 1)
+		state = &LinesOfAction::CheckPlayerWins;
+
+	return true;
+}
+
+bool LinesOfAction::CheckPlayerWins()
+{
+	// assume no for now
+	pi = pi ^ 1;
+	state = &LinesOfAction::PlayerChooseChip;
+	return true;
 }

@@ -15,7 +15,7 @@ public:
 	Color color;
 
 	Chip();
-	void SetRandomOffScreen(void);
+	void SetRandomOffScreen(bool move_to = false);
 
 	bool Update(float elapsed);
 	void Render(void) const;

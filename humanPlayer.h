@@ -6,7 +6,7 @@ class HumanPlayer : public Player
 public:
 	HumanPlayer(bool white);
 	bool ChooseChip(LinesOfAction* ploa) override;
-	bool ChooseTarget() override;
+	bool ChooseTarget(LinesOfAction* ploa) override;
 };
 
 

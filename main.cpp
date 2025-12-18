@@ -75,7 +75,7 @@ int main(void)
 	InitWindow(800, 600, title);
 	SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
 	set_scale();
-	SetTargetFPS(60);
+	SetTargetFPS(30);
 
 	LinesOfAction loa;
 	loa.requires_render = true;
@@ -98,6 +98,8 @@ int main(void)
 	//}
 		EndDrawing();
 	}
+
+	loa.Shutdown();
 
 	CloseWindow();        // Close window and OpenGL context
 	return 0;

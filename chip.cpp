@@ -3,6 +3,8 @@
 #include "constants.h"
 #include "chip.h"
 
+Texture2D Chip::texChip;
+
 Chip::Chip()
 {
 	SetRandomOffScreen();
@@ -63,9 +65,7 @@ bool Chip::Update(float elapsed)
 
 void Chip::Render() const
 {
-	DrawCircle(px, py, CHIP_RADIUS, color);
-	if (selected)
-		DrawCircle(px, py, CHIP_RADIUS / 2, RED);
+	DrawTexture(texChip, px - CHIP_RADIUS, py - CHIP_RADIUS, selected ? DARKGREEN : color);
 }
 
 bool Chip::Contains(Vector2 pt)

@@ -4,13 +4,14 @@
 class Chip
 {
 public:
-	int px, py;		// pixel position
+	static Texture2D texChip;
+
+	int bx, by;		// board x and y
+	int px, py;		// pixel position (animated)
 	int fx, tx;		// lerp from
 	int fy, ty;		// lerp to
 	float t;			// lerp t
-
 	bool selected;
-
 	Color color;
 
 	Chip();

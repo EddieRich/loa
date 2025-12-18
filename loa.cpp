@@ -5,11 +5,10 @@
 #include "humanPlayer.h"
 #include "loa.h"
 
-extern Vector2 game_mouse;
-extern Camera2D camera;
-
-const Color darkColor = (Color){ 112, 112, 112, 255 };
-const Color lightColor = (Color){ 144, 144, 144, 255 };
+Color darkColor = (Color){ 112, 112, 112, 255 };
+Color lightColor = (Color){ 144, 144, 144, 255 };
+Color darkChip = (Color){ 16, 16, 16, 255 };
+Color lightChip = (Color){ 240, 240, 240, 255 };
 
 LinesOfAction::LinesOfAction()
 {
@@ -17,11 +16,159 @@ LinesOfAction::LinesOfAction()
 	player[0] = 0;
 	player[1] = 0;
 	pi = 0;
+	Image img = GenImageGradientSquare(SQUARE_SIZE, SQUARE_SIZE, 0.95, WHITE, BLACK);
+	texSquare = LoadTextureFromImage(img);
+	UnloadImage(img);
+	img = GenImageGradientRadial(CHIP_RADIUS * 2, CHIP_RADIUS * 2, 0.95, WHITE, Fade(BLACK, 0.0f));
+	Chip::texChip = LoadTextureFromImage(img);
+	UnloadImage(img);
 }
 
 LinesOfAction::~LinesOfAction()
+{}
+
+void LinesOfAction::Shutdown()
 {
+	UnloadTexture(texSquare);
+	UnloadTexture(Chip::texChip);
 	ClearPlayers();
+}
+
+bool LinesOfAction::ChipAt(int bx, int by)
+{
+	for (int i = 0; i < 24; i++)
+	{
+		if (chip[i].bx == bx && chip[i].by == by)
+			return true;
+	}
+
+	return false;
+}
+
+int LinesOfAction::ChipIndexAt(int bx, int by)
+{
+	for (int i = 0; i < 24; i++)
+	{
+		if (chip[i].bx == bx && chip[i].by == by)
+			return i;
+	}
+
+	return -1;
+}
+
+bool LinesOfAction::LegalMove(int ci, int dx, int dy, int count)
+{
+	if (count == 0)
+		return false;
+
+	int bx = chip[ci].bx;
+	int by = chip[ci].by;
+	int ii;
+	// check in between squares for opponent chips
+	for (int i = 0; i < (count - 1); i++)
+	{
+		bx += dx;
+		by += dy;
+		if (bx >= 0 && bx <= 7 && by >= 0 && by <= 7)
+		{
+			ii = ChipIndexAt(bx, by);
+			// if there is a chip and it's the opponent color
+			if (ii >= 0 && ((ci < 12) ? (ii > 11) : (ii < 12)))
+				return false;
+		}
+		else
+			return false;
+	}
+	// check the target square
+	bx += dx;
+	by += dy;
+	if (bx >= 0 && bx <= 7 && by >= 0 && by <= 7)
+	{
+		ii = ChipIndexAt(bx, by);
+		// if there is a chip and it's the players color
+		if (ii >= 0 && ((ci < 12) ? (ii < 12) : (ii > 11)))
+			return false;
+	}
+	else
+		return false;
+
+	return true;
+}
+
+int LinesOfAction::GetLineCount(int x, int y, int dx, int dy)
+{
+	int cc = 0;		// chip count
+
+	// first check the "line of action" in the dx dy direction
+	int bx = x;
+	int by = y;
+	while (bx >= 0 && bx <= 7 && by >= 0 && by <= 7)
+	{
+		if (ChipAt(bx, by))
+			cc++;
+
+		bx += dx;
+		by += dy;
+	}
+
+	// now check the opposite dx dy on the same "line of action"
+	bx = x - dx;
+	by = y - dy;
+	while (bx >= 0 && bx <= 7 && by >= 0 && by <= 7)
+	{
+		if (ChipAt(bx, by))
+			cc++;
+
+		bx -= dx;
+		by -= dy;
+	}
+
+	return cc;
+}
+
+void LinesOfAction::SetTargetsFor(int chip_index)
+{
+	target = 0ULL;
+
+	// horizontal
+	int chip_count = GetLineCount(chip[chip_index].bx, chip[chip_index].by, 1, 0);
+	if (LegalMove(chip_index, 1, 0, chip_count))
+		SetTargetFlag(chip[chip_index].bx + chip_count, chip[chip_index].by);
+	if (LegalMove(chip_index, -1, 0, chip_count))
+		SetTargetFlag(chip[chip_index].bx - chip_count, chip[chip_index].by);
+
+	// vertical
+	chip_count = GetLineCount(chip[chip_index].bx, chip[chip_index].by, 0, 1);
+	if (LegalMove(chip_index, 0, 1, chip_count))
+		SetTargetFlag(chip[chip_index].bx, chip[chip_index].by + chip_count);
+	if (LegalMove(chip_index, 0, -1, chip_count))
+		SetTargetFlag(chip[chip_index].bx, chip[chip_index].by - chip_count);
+
+	// diagonal 1 '\'
+	chip_count = GetLineCount(chip[chip_index].bx, chip[chip_index].by, 1, 1);
+	if (LegalMove(chip_index, 1, 1, chip_count))
+		SetTargetFlag(chip[chip_index].bx + chip_count, chip[chip_index].by + chip_count);
+	if (LegalMove(chip_index, -1, -1, chip_count))
+		SetTargetFlag(chip[chip_index].bx - chip_count, chip[chip_index].by - chip_count);
+
+	// diagonal 2 '/'
+	chip_count = GetLineCount(chip[chip_index].bx, chip[chip_index].by, -1, 1);
+	if (LegalMove(chip_index, -1, 1, chip_count))
+		SetTargetFlag(chip[chip_index].bx - chip_count, chip[chip_index].by + chip_count);
+	if (LegalMove(chip_index, 1, -1, chip_count))
+		SetTargetFlag(chip[chip_index].bx + chip_count, chip[chip_index].by - chip_count);
+}
+
+void LinesOfAction::SetTargetFlag(int bx, int by)
+{
+	unsigned long long int mask = 1ULL << (by * 8 + bx);
+	target |= mask;
+}
+
+bool LinesOfAction::IsTarget(int bx, int by)
+{
+	unsigned long long int mask = 1ULL << (by * 8 + bx);
+	return ((target & mask) != 0ULL);
 }
 
 void LinesOfAction::ClearPlayers()
@@ -58,13 +205,21 @@ void LinesOfAction::Render()
 		for (int y = 0; y < 8; y++)
 		{
 			Color color = ((x ^ y) & 1) ? darkColor : lightColor;
-			DrawRectangle(x * SQUARE_SIZE, y * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE, color);
-			DrawRectangleLinesEx((Rectangle) { (float)(x * SQUARE_SIZE), (float)(y * SQUARE_SIZE), SQUARE_SIZE, SQUARE_SIZE }, 2.0 / camera.zoom, BLACK);
+			DrawTexture(texSquare, x * SQUARE_SIZE, y * SQUARE_SIZE, color);
 		}
 	}
 
 	for (const Chip& c : chip)
 		c.Render();
+
+	for (int x = 0; x < 8; x++)
+	{
+		for (int y = 0; y < 8; y++)
+		{
+			if (IsTarget(x, y))
+				DrawCircle((x + 0.5f) * SQUARE_SIZE, (y + 0.5f) * SQUARE_SIZE, CHIP_RADIUS / 2, GOLD);
+		}
+	}
 
 	requires_render = false;
 }
@@ -81,13 +236,21 @@ bool LinesOfAction::NewGame()
 
 	for (int i = 0; i < 6; i++)
 	{
-		chip[i].color = WHITE;
+		chip[i].color = lightChip;
+		chip[i].bx = i + 1;
+		chip[i].by = 0;
 		chip[i].MoveTo(((i + 1.5) * SQUARE_SIZE), (0.5 * SQUARE_SIZE));
-		chip[i + 6].color = WHITE;
+		chip[i + 6].color = lightChip;
+		chip[i + 6].bx = i + 1;
+		chip[i + 6].by = 7;
 		chip[i + 6].MoveTo(((i + 1.5) * SQUARE_SIZE), (7.5 * SQUARE_SIZE));
-		chip[i + 12].color = BLACK;
+		chip[i + 12].color = darkChip;
+		chip[i + 12].bx = 0;
+		chip[i + 12].by = i + 1;
 		chip[i + 12].MoveTo((0.5 * SQUARE_SIZE), ((i + 1.5) * SQUARE_SIZE));
-		chip[i + 18].color = BLACK;
+		chip[i + 18].color = darkChip;
+		chip[i + 18].bx = 7;
+		chip[i + 18].by = i + 1;
 		chip[i + 18].MoveTo((7.5 * SQUARE_SIZE), ((i + 1.5) * SQUARE_SIZE));
 	}
 
@@ -97,10 +260,13 @@ bool LinesOfAction::NewGame()
 
 bool LinesOfAction::PlayerChooseChip()
 {
-	return player[pi]->ChooseChip(this);
+	if (player[pi]->ChooseChip(this))
+		state = &LinesOfAction::PlayerChooseTarget;
+
+	return requires_render;
 }
 
 bool LinesOfAction::PlayerChooseTarget()
 {
-	return player[pi]->ChooseTarget();
+	return player[pi]->ChooseTarget(this);
 }

@@ -3,9 +3,9 @@
 #include "chip.h"
 #include "player.h"
 
-Player::Player(bool white)
+Player::Player(bool black)
 {
-	isWhite = white;
+	isBlack = black;
 }
 
 Player::~Player()

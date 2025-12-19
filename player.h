@@ -6,9 +6,9 @@ class LinesOfAction;
 class Player
 {
 public:
-	bool isWhite;
+	bool isBlack;
 
-	Player(bool white);
+	Player(bool black);
 	virtual ~Player();
 	virtual bool ChooseChip(LinesOfAction* ploa) = 0;
 	// return -1=go back, 0 = not yet, 1 = target chosen

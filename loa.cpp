@@ -239,8 +239,8 @@ void LinesOfAction::Render()
 bool LinesOfAction::NewGame()
 {
 	ClearPlayers();
-	player[0] = new HumanPlayer(false);
-	player[1] = new HumanPlayer(true);
+	player[0] = new HumanPlayer(true);
+	player[1] = new HumanPlayer(false);
 	pi = 0;
 	target = 0ULL;
 

@@ -85,17 +85,18 @@ int main(void)
 		events(&loa);
 
 		BeginDrawing();
-		//if (showTitleScreen)
+		if (showTitleScreen)
 			//render_title_screen(&lindy);
-		//else
-		//{
-		if (loa.Update(GetFrameTime()))
+			ClearBackground(BLACK);
+		else
 		{
-			BeginMode2D(camera);
-			loa.Render();
-			EndMode2D();
+			if (loa.Update(GetFrameTime()))
+			{
+				BeginMode2D(camera);
+				loa.Render();
+				EndMode2D();
+			}
 		}
-	//}
 		EndDrawing();
 	}
 

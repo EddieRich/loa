@@ -9,7 +9,7 @@ extern Vector2 game_mouse;
 
 //extern Camera2D camera;
 
-HumanPlayer::HumanPlayer(bool white) : Player(white)
+HumanPlayer::HumanPlayer(bool black) : Player(black)
 {}
 
 bool HumanPlayer::ChooseChip(LinesOfAction* ploa)
@@ -29,7 +29,7 @@ bool HumanPlayer::ChooseChip(LinesOfAction* ploa)
 			ci = i;
 	}
 
-	if (ci >= 0 && isWhite ? (ci >= 12) : (ci < 12))
+	if (ci >= 0 && isBlack ? (ci < 12) : (ci >= 12))
 	{
 		ploa->SetTargetsFor(ci);
 		if (ploa->target != 0ULL)

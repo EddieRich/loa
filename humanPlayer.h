@@ -4,10 +4,9 @@
 class HumanPlayer : public Player
 {
 public:
-	HumanPlayer(bool white);
+	HumanPlayer(bool black);
 	bool ChooseChip(LinesOfAction* ploa) override;
 	int ChooseTarget(LinesOfAction* ploa) override;
 };
-
 
 #endif // __HUMANPLAYER_DEFINED__

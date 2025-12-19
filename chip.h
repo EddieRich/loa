@@ -14,6 +14,8 @@ public:
 	bool selected;
 	Color color;
 
+	bool visited;	// used during CheckForWinner
+
 	Chip();
 	void SetRandomOffScreen(bool move_to = false);
 

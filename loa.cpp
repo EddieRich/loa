@@ -4,6 +4,7 @@
 #include "player.h"
 #include "humanPlayer.h"
 #include "loa.h"
+#include "fifo.h"
 
 Color darkColor = (Color){ 112, 112, 112, 255 };
 Color lightColor = (Color){ 144, 144, 144, 255 };
@@ -284,15 +285,86 @@ bool LinesOfAction::PlayerChooseTarget()
 	if (result == -1)
 		state = &LinesOfAction::PlayerChooseChip;
 	else if (result == 1)
-		state = &LinesOfAction::CheckPlayerWins;
+		state = &LinesOfAction::CheckForWinner;
 
 	return true;
 }
 
-bool LinesOfAction::CheckPlayerWins()
+bool LinesOfAction::CheckForWinner()
 {
-	// assume no for now
+	int active[12];
+	int active_count;
+	Fifo fifo(12);
+
+	// check both players, current first
+	for (int p = 0; p < 2; p++)
+	{
+		active_count = 0;
+		fifo.Reset();
+
+		// must check current player first
+		int plyr = ((pi + p) & 1) * 12;
+		// first get the list of indeces still on the board
+		for (int i = 0, ii = plyr; i < 12; i++, ii++)
+		{
+			if (chip[ii].bx > -1 && chip[ii].by > -1)
+			{
+				chip[ii].visited = false;
+				active[active_count++] = ii;
+			}
+		}
+
+		if (active_count == 1)
+		{
+			state = (plyr < 12) ? &LinesOfAction::Player1Wins : &LinesOfAction::Player2Wins;
+			return false;
+		}
+
+		// push the first active into the queue
+		int ci = active[0];
+		chip[ci].visited = true;
+		int visited = 1;
+		fifo.Push(ci);
+		while (!fifo.Empty())
+		{
+			ci = fifo.Pop();
+			for (int a = 0; a < active_count; a++)
+			{
+				int ai = active[a];
+				if (chip[ai].visited == false)
+				{
+					int dx = chip[ci].bx - chip[ai].bx;
+					int dy = chip[ci].by - chip[ai].by;
+					if (dx >= -1 && dx <= 1 && dy >= -1 && dy <= 1)
+					{
+						chip[ai].visited = true;
+						fifo.Push(ai);
+						visited++;
+					}
+				}
+			}
+		}
+
+		// all players chips are grouped
+		if (visited == active_count)
+		{
+			state = (plyr < 12) ? &LinesOfAction::Player1Wins : &LinesOfAction::Player2Wins;
+			return false;
+		}
+	}
+
+	// no winners
 	pi = pi ^ 1;
 	state = &LinesOfAction::PlayerChooseChip;
 	return true;
+}
+
+bool LinesOfAction::Player1Wins()
+{
+	return false;
+}
+
+bool LinesOfAction::Player2Wins()
+{
+	return false;
 }

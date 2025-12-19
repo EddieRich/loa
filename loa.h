@@ -32,10 +32,13 @@ public:
 	bool LegalMove(int ci, int dx, int dy, int count);
 	int GetLineCount(int x, int y, int dx, int dy);
 
+	// game states
 	bool NewGame();
 	bool PlayerChooseChip();
 	bool PlayerChooseTarget();
-	bool CheckPlayerWins();
+	bool CheckForWinner();
+	bool Player1Wins();
+	bool Player2Wins();
 
 	bool Update(float elapsed);
 	void Render();
